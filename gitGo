@@ -1,4 +1,4 @@
 #!/bin/bash
 if [[ $(which u-env) != "" ]]; then
-  u-env Potiguar
+  u-env Person
 fi
