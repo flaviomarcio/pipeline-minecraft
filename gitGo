@@ -1,0 +1,4 @@
+#!/bin/bash
+if [[ $(which u-env) != "" ]]; then
+  u-env Potiguar
+fi

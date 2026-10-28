@@ -1,0 +1,64 @@
+services:
+  server:
+    # Imagem gerada pelo Dockerfile deste repositorio
+    image: minecraft-paper:1.21.11
+    hostname: minecraft
+    ports:
+      - target: 25565
+        published: 25565
+        protocol: tcp
+        mode: host
+    environment:
+      EULA: "TRUE"
+      MEMORY: "4G"
+      TZ: "America/Sao_Paulo"
+    volumes:
+      # Pastas fixas no host (criadas pelo run-deploy.sh)
+      - type: bind
+        source: /data/minecraft/data
+        target: /data
+    configs:
+      - source: minecraft_server_properties
+        target: /config/server.properties
+      - source: minecraft_whitelist
+        target: /config/whitelist.json
+    secrets:
+      - minecraft_rcon_password
+    networks:
+      - minecraft-net
+    # Necessario para o console via docker attach
+    tty: true
+    stdin_open: true
+    stop_grace_period: 90s
+    deploy:
+      replicas: 1
+      placement:
+        # Imagem e construida localmente no manager
+        constraints:
+          - node.role == manager
+      resources:
+        limits:
+          memory: 5G
+      restart_policy:
+        condition: any
+        delay: 10s
+
+networks:
+  minecraft-net:
+    name: minecraft-net
+    driver: overlay
+    attachable: true
+
+configs:
+  # Hashes exportados pelo run-deploy.sh (configs sao imutaveis)
+  minecraft_server_properties:
+    name: minecraft_server_properties_${SERVER_PROPERTIES_HASH}
+    file: ./config/server.properties
+  minecraft_whitelist:
+    name: minecraft_whitelist_${WHITELIST_HASH}
+    file: ./config/whitelist.json
+
+secrets:
+  # Criado automaticamente pelo run-deploy.sh (senha aleatoria)
+  minecraft_rcon_password:
+    external: true
